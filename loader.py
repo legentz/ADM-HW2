@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 class Loader:
-	def __init__(self, csv=False, chunksize=10000, separator=','):
+	def __init__(self, csv=False, nrows=None, chunksize=10000, separator=','):
 
 		# check csv path
 		assert csv != False and os.path.isfile(csv)
@@ -10,6 +10,7 @@ class Loader:
 		self.csv = csv
 		self.chunksize = chunksize
 		self.separator = separator
+		self.nrows = nrows
 
 	# get line with columns
 	def get_columns(self, nline=0):
@@ -23,10 +24,10 @@ class Loader:
 
 		# get all data from all columns
 		if len(usecols) == 0:
-			iterator = pd.read_csv(self.csv, chunksize=self.chunksize, sep=self.separator, iterator=True)
+			iterator = pd.read_csv(self.csv, nrows=self.nrows, chunksize=self.chunksize, sep=self.separator, iterator=True)
 
 		# take precise columns
 		else:
-			iterator = pd.read_csv(self.csv, chunksize=self.chunksize, sep=self.separator, iterator=True, usecols=usecols)
+			iterator = pd.read_csv(self.csv, nrows=self.nrows, chunksize=self.chunksize, sep=self.separator, iterator=True, usecols=usecols)
 
 		return iterator
