@@ -43,15 +43,15 @@ class Loader:
 		self.drop_on_columns = drop_on_columns
 
 	# get all parsed content
-	def iterate(self, usecols=[]):
+	def iterate(self, usecols=[], parse_dates=False, date_index=None):
 
 		# get all data from all columns
 		if len(usecols) == 0:
-			iterator = pd.read_csv(self.csv, nrows=self.nrows, chunksize=self.chunksize, sep=self.separator, iterator=True)
+			iterator = pd.read_csv(self.csv, nrows=self.nrows, chunksize=self.chunksize, sep=self.separator, iterator=True, parse_dates=parse_dates)
 
 		# take precise columns
 		else:
-			iterator = pd.read_csv(self.csv, nrows=self.nrows, chunksize=self.chunksize, sep=self.separator, iterator=True, usecols=usecols)
+			iterator = pd.read_csv(self.csv, nrows=self.nrows, chunksize=self.chunksize, sep=self.separator, iterator=True, parse_dates=parse_dates, usecols=usecols)
 
 		# create a generator
 		for df in iterator:
@@ -63,5 +63,12 @@ class Loader:
 				# remove columns that we're used to join
 				if self.drop_on_columns:
 					df = df.drop(columns=list(self.to_merge_on))
+
+			# check date_index
+			assert date_index in parse_dates and type(date_index) == str
+
+			# dates have to be indexed to be manipulated
+			if parse_dates:
+				df = df.set_index(date_index)
 
 			yield df
