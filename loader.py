@@ -8,14 +8,14 @@ TAB = '\t'
 SPACE = ' '
 
 '''
-The class below is meant to be a simple wrapper with the main purpose of allow the developer to work 
+The class below is meant to be a simple wrapper with the main purpose of making life easier to the user while working 
 with big input file, obviously, through the usage of Pandas API.
-Hence, the Jupyter notebook is lighter and simpler to read (I know, It shoul be improved with further code reuse).
+Hence, the Jupyter notebook will be lighter and simpler to read (Yeah, I know, It should be improved with further code reuse).
 
-The provided datasets are divided in file (one per month), so the user could freely feed a list of file_path and start iterating 
+The provided datasets are divided in multiple file (one per month), so the user could freely feed a list of file_path and start iterating 
 as they were concatenated, in chunk. 
 
-Due to a lack of time, this piece of code was not engineered too much, so, I presume is not practical to use outside this context
+Due to a lack of time, this piece of code was not engineered too much, so, I presume is not practical to use it outside this context
 outside of this homework without further modifications. But, hey, let's dive into it anyway...
 '''
 class Loader:
@@ -61,10 +61,10 @@ class Loader:
 					return line.rstrip('\n').split(self.separator)
 
 	# This function is useful to merge a file to another that is being yielded in chunks. Be careful that
-	# the file being merged is iterable, so, it has to fit in your memory :)
+	# the file being merged is NOT iterable, so, it has to fit in your memory :)
 	# 
 	#	csv -> has to be a string, indicating the path of the file to merge
-	#	on -> has to be a tubple, containing the left and right attributes to merge on
+	#	on -> has to be a tuple, containing the left and right attributes to merge on
 	# 	direction -> has to be a string, indicating the direction of the merge
 	# 	usecols -> has to be a list, containing the no. or the names of the columns we want to load (and save memory)
 	# 	separator -> has to be a string, containing the separator used within merge file
