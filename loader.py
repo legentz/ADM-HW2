@@ -1,11 +1,30 @@
 import pandas as pd
 import os
 
+# separators
+# todo: need to assert separators
 COMMA = ','
 TAB = '\t'
 SPACE = ' '
 
+'''
+The class below is meant to be a simple wrapper with the main purpose of allow the developer to work 
+with big input file, obviously, through the usage of Pandas API.
+Hence, the Jupyter notebook is lighter and simpler to read (I know, It shoul be improved with further code reuse).
+
+The provided datasets are divided in file (one per month), so the user could freely feed a list of file_path and start iterating 
+as they were concatenated, in chunk. 
+
+Due to a lack of time, this piece of code was not engineered too much, so, I presume is not practical to use outside this context
+outside of this homework without further modifications. But, hey, let's dive into it anyway...
+'''
 class Loader:
+
+	# Constuctor
+	# 	csv 	-> has to be a list of tuples (eg. [('Month_name', 'file_path') )] containing info about the file to load (for each month)
+	# 	nrows 	-> has to be an int, indicating the no. of lines we want to to load for each file at max (maily used for debug purposes)
+	# 	chunksize -> has to be an int, indicating the no. of lines (batch) that are going to be taken into account when reading a file line-by-line
+	# 	separator -> has to be a string, containing the separator used within input files
 	def __init__(self, csv=None, nrows=None, chunksize=10000, separator=COMMA):
 
 		# check csv type
@@ -21,6 +40,8 @@ class Loader:
 		self.chunksize = chunksize
 		self.separator = separator
 		self.nrows = nrows
+
+		# for later use
 		self.to_merge = None
 		self.to_merge_direction = None
 		self.to_merge_on = None
@@ -39,7 +60,15 @@ class Loader:
 				if i == nline:
 					return line.rstrip('\n').split(self.separator)
 
-	# this could not be iterated
+	# This function is useful to merge a file to another that is being yielded in chunks. Be careful that
+	# the file being merged is iterable, so, it has to fit in your memory :)
+	# 
+	#	csv -> has to be a string, indicating the path of the file to merge
+	#	on -> has to be a tubple, containing the left and right attributes to merge on
+	# 	direction -> has to be a string, indicating the direction of the merge
+	# 	usecols -> has to be a list, containing the no. or the names of the columns we want to load (and save memory)
+	# 	separator -> has to be a string, containing the separator used within merge file
+	# 	drop_on_columns -> has to be a bool, indicating whether or not to drop the columns that were used for merging
 	def merge(self, csv=None, on=None, direction='left', usecols=[], separator=COMMA, drop_on_columns=False):
 
 		# check csv path
@@ -59,9 +88,14 @@ class Loader:
 		self.to_merge_on = on
 		self.drop_on_columns = drop_on_columns
 
-	# get all parsed content
+	# This function "returns" a generator that's an iterator anyway. It enable the user to get the data in batches of n lines
+	# without stressing the memory (or, like in my case, to avoid crashing :) )
+	# 	usecols -> has to be a list, containing the no. or the names of the columns we want to load (and save memory)
+	# 	parse_dates -> has to be a list, indicating whether or not to automatically parse dates identified by an attribute (or more)
+	# 	date_index -> has to be a string, indicating ONE date column that has been parsed, should become index (for better manipulation) 
 	def iterate(self, usecols=[], parse_dates=False, date_index=None):
 
+		# continue to loop until any csv left in the queue
 		while len(self.csv) > 0:
 
 			# get csv to process from the queue
@@ -79,6 +113,7 @@ class Loader:
 				iterator = pd.read_csv(csv, nrows=self.nrows, chunksize=self.chunksize, sep=self.separator, iterator=True, parse_dates=parse_dates, usecols=usecols)
 
 			# after being processed, we remove it from the queue
+			# todo: this could be improved using a pointer instead of removing from the csv list
 			self.csv.pop(0)
 
 			# create a generator
@@ -98,6 +133,9 @@ class Loader:
 					# check date_index
 					assert date_index in parse_dates and type(date_index) == str
 					
+					# setting datetime index
+					# todo: check whether to avoid creating an index when parsing dates
 					df = df.set_index(date_index)
 
+				# yeild DataFrame and the name of the month which is related to
 				yield month, df
